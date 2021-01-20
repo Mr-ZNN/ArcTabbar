@@ -71,11 +71,15 @@
     NSMutableArray *arry = [NSMutableArray array];
     for (UIView *btn in self.tabBar.subviews) {
         if ([btn isKindOfClass:NSClassFromString(@"UITabBarButton")]) {
-            [arry addObject:btn];
+            for (UIView *imageView in btn.subviews) {
+                if ([imageView isKindOfClass:NSClassFromString(@"UITabBarSwappableImageView")]) {
+                    [arry addObject:imageView];
+                }
+            }
         }
     }
     //添加动画
-    [self addscaleAndKeepAnimtaionWithArr:arry index:self.indexFlag];
+    [self addscaleAndUpTranslationAndKeepAnimtaionWithArr:arry index:self.indexFlag];
 }
 - (void)tabBar:(UITabBar *)tabBar didSelectItem:(UITabBarItem *)item{
     NSUInteger index = [tabBar.items indexOfObject:item];
@@ -88,11 +92,15 @@
         NSMutableArray *arry = [NSMutableArray array];
         for (UIView *btn in self.tabBar.subviews) {
             if ([btn isKindOfClass:NSClassFromString(@"UITabBarButton")]) {
-                [arry addObject:btn];
+                for (UIView *imageView in btn.subviews) {
+                    if ([imageView isKindOfClass:NSClassFromString(@"UITabBarSwappableImageView")]) {
+                        [arry addObject:imageView];
+                    }
+                }
             }
         }
         //添加动画
-        [self addscaleAndKeepAnimtaionWithArr:arry index:index];
+        [self addscaleAndUpTranslationAndKeepAnimtaionWithArr:arry index:index];
         
         self.indexFlag = index;
     }
@@ -162,5 +170,36 @@
         }
     }
 }
-
+//5、放大向上平移并保持
+- (void)addscaleAndUpTranslationAndKeepAnimtaionWithArr:(NSMutableArray *)arry index:(NSInteger)index
+{
+    //放大效果
+    CABasicAnimation *animationScale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+    //速度控制函数，控制动画运行的节奏
+    animationScale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+    animationScale.duration = 0.2;       //执行时间
+    animationScale.repeatCount = 1;      //执行次数
+    animationScale.removedOnCompletion = NO;
+    animationScale.fillMode = kCAFillModeForwards;           //保证动画效果延续
+    animationScale.fromValue = [NSNumber numberWithFloat:1.0];   //初始伸缩倍数
+    animationScale.toValue = [NSNumber numberWithFloat:1.5];     //结束伸缩倍数
+    [[arry[index] layer] addAnimation:animationScale forKey:@"animationScale"];
+    //向上移动
+    CABasicAnimation *animationTrans = [CABasicAnimation animationWithKeyPath:@"transform.translation.y"];
+    //速度控制函数，控制动画运行的节奏
+    animationTrans.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+    animationTrans.duration = 0.2;       //执行时间
+    animationTrans.repeatCount = 1;      //执行次数
+    animationTrans.removedOnCompletion = NO;
+    animationTrans.fillMode = kCAFillModeForwards;           //保证动画效果延续
+    animationTrans.fromValue = [NSNumber numberWithFloat:0];   //初始伸缩倍数
+    animationTrans.toValue = [NSNumber numberWithFloat:-10];     //结束伸缩倍数
+    [[arry[index] layer] addAnimation:animationTrans forKey:@"animationTrans"];
+    //移除其他tabbar的动画
+    for (int i = 0; i<arry.count; i++) {
+        if (i != index) {
+            [[arry[i] layer] removeAllAnimations];
+        }
+    }
+}
 @end
